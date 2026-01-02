@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SurgStudy | 术影学习打卡</title>
+    <title>SurgReflect | 术思录</title>
     <style>
         :root {
-            --primary: #003366; /* 医疗深蓝 */
-            --primary-light: #e6f0ff;
-            --accent: #20c997;  /* 成功绿 */
-            --text: #333;
-            --text-light: #888;
-            --bg: #f8f9fa;
-            --white: #ffffff;
-            --border: #eee;
+            --primary: #004d40; /* 墨绿，沉稳学术 */
+            --primary-light: #e0f2f1;
+            --accent: #ffb300;  /* 思考的金黄色 */
+            --text: #263238;
+            --text-light: #78909c;
+            --bg: #eceff1;
+            --card-bg: #ffffff;
+            --danger: #d32f2f;
+            --success: #388e3c;
         }
 
         body {
@@ -22,434 +23,375 @@
             color: var(--text);
             margin: 0;
             padding: 20px;
-            padding-bottom: 80px; /* FAB space */
+            padding-bottom: 90px;
         }
 
-        /* 头部统计卡片 */
-        .header-card {
-            background: linear-gradient(135deg, var(--primary) 0%, #0056b3 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.2);
-        }
-        .header-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; opacity: 0.9; }
-        .stats-row { display: flex; justify-content: space-between; }
-        .stat-item { text-align: center; }
-        .stat-num { font-size: 24px; font-weight: 700; display: block; }
-        .stat-label { font-size: 12px; opacity: 0.8; }
+        h1, h2, h3 { margin: 0; font-weight: 600; }
 
-        /* 日历区域 */
-        .calendar-container {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+        /* --- 顶部：随机复盘卡片 (Random Review) --- */
+        .random-card-container {
+            margin-bottom: 25px;
         }
-        .calendar-header {
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-        .btn-month { background: none; border: none; color: var(--primary); font-size: 18px; cursor: pointer; padding: 0 10px; }
-        
-        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        
-        .day {
-            aspect-ratio: 1/1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            position: relative;
-            transition: background 0.2s;
-        }
-        .day:active { background: #f0f0f0; }
-        .day.today { color: var(--primary); font-weight: bold; border: 1px solid var(--primary); }
-        .day.selected { background-color: var(--primary); color: white; }
-        .day.has-log::after {
-            content: '';
-            width: 5px; height: 5px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            bottom: 4px;
-        }
-
-        /* 记录列表 */
-        .log-list-title { font-size: 14px; color: var(--text-light); margin-bottom: 10px; font-weight: 600; }
-        .log-card {
-            background: var(--white);
-            padding: 15px;
-            border-radius: 12px;
             margin-bottom: 10px;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: var(--text-light);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .log-info h4 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
-        .log-info p { margin: 0; font-size: 13px; color: #666; }
-        .log-tag { background: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+        
+        .review-card {
+            background: #fff9c4; /* 模仿淡黄色便签纸 */
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: relative;
+            border-left: 5px solid var(--accent);
+            animation: fadeIn 0.5s;
+        }
+        .review-card.empty-state {
+            background: white;
+            border-left: 5px solid #ccc;
+            text-align: center;
+            color: #999;
+            padding: 30px 20px;
+        }
+        
+        .rc-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #d7ccc8; padding-bottom: 10px; }
+        .rc-title { font-size: 18px; color: #333; font-weight: bold; }
+        .rc-date { font-size: 12px; color: #666; }
+        .rc-role { font-size: 12px; background: rgba(0,0,0,0.1); padding: 2px 6px; border-radius: 4px; }
 
-        /* 悬浮按钮 (FAB) */
+        .rc-section { margin-bottom: 12px; }
+        .rc-label { font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block; }
+        .rc-content { font-size: 15px; line-height: 1.5; color: #333; white-space: pre-wrap; }
+
+        /* --- 归档过滤器 (Archive Filters) --- */
+        .filter-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .filter-chip {
+            background: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            border: 1px solid #cfd8dc;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 77, 64, 0.3);
+        }
+
+        /* --- 历史列表 --- */
+        .history-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        .hc-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .hc-name { font-weight: 600; font-size: 16px; }
+        .hc-role { font-size: 11px; padding: 2px 5px; border-radius: 4px; background: var(--primary-light); color: var(--primary); }
+        .hc-meta { font-size: 12px; color: #90a4ae; }
+        .hc-snippet { font-size: 13px; color: #546e7a; margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* --- FAB & Modal --- */
         .fab {
             position: fixed;
             bottom: 30px;
             right: 20px;
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             background: var(--primary);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.4);
+            font-size: 30px;
+            box-shadow: 0 4px 20px rgba(0, 77, 64, 0.4);
             cursor: pointer;
             z-index: 100;
         }
 
-        /* 模态框 */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 200;
-            align-items: flex-end; /* 底部弹出 */
+            overflow-y: auto;
         }
         .modal-content {
-            background: white;
-            width: 100%;
-            padding: 25px 20px;
-            border-radius: 20px 20px 0 0;
-            box-sizing: border-box;
-            animation: slideUp 0.3s;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #666; }
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .btn-block {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        /* 统计胶囊 */
-        .top-stats {
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
+            background: #f5f5f5;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 500px;
             border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .capsule {
-            display: inline-block;
-            background: #f0f2f5;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            color: #555;
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-        .capsule strong { color: var(--primary); }
+        
+        .form-group { margin-bottom: 16px; background: white; padding: 10px; border-radius: 8px; }
+        .form-group label { display: block; font-size: 12px; color: #78909c; margin-bottom: 6px; font-weight: bold; }
+        .form-control { width: 100%; border: none; font-size: 16px; outline: none; background: transparent; font-family: inherit; }
+        textarea.form-control { resize: none; min-height: 60px; }
+        
+        .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        
+        /* 颜色标签辅助 */
+        .tag-icon { margin-right: 5px; }
 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="header-card">
-    <div class="header-title">👋 Dr. 学习统计</div>
-    <div class="stats-row">
-        <div class="stat-item">
-            <span class="stat-num" id="total-count">0</span>
-            <span class="stat-label">累计打卡 (个)</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-num" id="month-count">0</span>
-            <span class="stat-label">本月学习 (个)</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-num" id="top-expert">-</span>
-            <span class="stat-label">最爱专家</span>
-        </div>
+<div class="random-card-container">
+    <div class="section-header">
+        <span>💡 每日一省 (Random Recall)</span>
+        <span style="font-size:20px; cursor:pointer;" onclick="renderRandomLog()">🎲</span>
     </div>
-</div>
-
-<div class="calendar-container">
-    <div class="calendar-header">
-        <button class="btn-month" onclick="changeMonth(-1)">‹</button>
-        <span id="current-month-label">2023年 10月</span>
-        <button class="btn-month" onclick="changeMonth(1)">›</button>
-    </div>
-    <div class="weekdays">
-        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-    </div>
-    <div class="days-grid" id="days-grid">
+    <div id="random-card-area">
         </div>
 </div>
 
-<div>
-    <div class="log-list-title" id="selected-date-title">今日记录</div>
-    <div id="log-list-container">
-        </div>
-</div>
+<div class="section-header">📚 档案库 (Archive)</div>
+<div class="filter-scroll" id="filter-container">
+    <div class="filter-chip active" onclick="filterLogs('all', this)">全部</div>
+    </div>
 
-<div class="top-stats">
-    <div class="log-list-title">高频术式 (Top Procedures)</div>
-    <div id="top-procedures-list">
-        </div>
-</div>
+<div id="logs-list">
+    </div>
 
 <div class="fab" onclick="openModal()">+</div>
 
-<div class="modal" id="add-modal">
+<div class="modal" id="entry-modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--primary)">新增学习记录</h3>
+        <h3 style="margin-bottom: 20px; color: var(--primary);">📝 手术复盘记录</h3>
         
         <div class="form-group">
-            <label>日期</label>
-            <input type="date" id="input-date" class="form-control">
-        </div>
-
-        <div class="form-group">
-            <label>专家姓名 (Surgeon)</label>
-            <input type="text" id="input-expert" class="form-control" placeholder="例如: Heald, 郑民华, 傅传刚" list="expert-suggestions">
-            <datalist id="expert-suggestions">
-                </datalist>
-        </div>
-
-        <div class="form-group">
-            <label>术式/部位 (Procedure)</label>
-            <input type="text" id="input-procedure" class="form-control" placeholder="例如: CME 右半, ISR, TME" list="procedure-suggestions">
-            <datalist id="procedure-suggestions">
-                <option value="CME 右半结肠切除">
-                <option value="腹腔镜 TME">
-                <option value="TaTME">
+            <label>手术名称 (Procedure)</label>
+            <input type="text" id="in-name" class="form-control" placeholder="例如: 腹腔镜右半结肠切除" list="proc-list">
+            <datalist id="proc-list">
+                <option value="腹腔镜右半结肠切除术 (CME)">
+                <option value="腹腔镜乙状结肠切除术">
+                <option value="腹腔镜直肠癌根治术 (Dixon)">
+                <option value="腹腔镜腹会阴联合切除术 (Miles)">
                 <option value="ISR (括约肌间切除)">
-                <option value="ELAPE">
-                <option value="NOSES">
             </datalist>
         </div>
 
-        <div class="form-group">
-            <label>备注 (Key Learning Points)</label>
-            <input type="text" id="input-note" class="form-control" placeholder="例如: 血管根部游离技巧...">
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>日期 (Date)</label>
+                <input type="date" id="in-date" class="form-control">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>身份 (Role)</label>
+                <select id="in-role" class="form-control">
+                    <option value="主刀">主刀</option>
+                    <option value="一助">一助</option>
+                    <option value="二助">二助</option>
+                    <option value="扶镜">扶镜手</option>
+                    <option value="指导">上级指导</option>
+                </select>
+            </div>
         </div>
 
-        <button class="btn-block" onclick="saveLog()">打卡保存</button>
-        <div style="text-align:center; margin-top:15px; color:#999; font-size:14px;" onclick="closeModal()">取消</div>
+        <div class="form-group" style="border-left: 3px solid #795548;">
+            <label>🧠 解剖精要 / 变异 (Anatomy)</label>
+            <textarea id="in-anatomy" class="form-control" placeholder="例如: Henle干解剖结构，血管变异..."></textarea>
+        </div>
+
+        <div class="form-group" style="border-left: 3px solid var(--success);">
+            <label>✅ 做得好的 (Good)</label>
+            <textarea id="in-good" class="form-control" placeholder="本次成功的操作细节..."></textarea>
+        </div>
+
+        <div class="form-group" style="border-left: 3px solid var(--danger);">
+            <label>⚠️ 待改进 / 注意 (Improvements)</label>
+            <textarea id="in-bad" class="form-control" placeholder="不足之处，下次需要注意的点..."></textarea>
+        </div>
+
+        <button class="btn-save" onclick="saveLog()">保存归档</button>
+        <div style="text-align:center; padding:15px; color:#999;" onclick="closeModal()">取消</div>
     </div>
 </div>
 
 <script>
-    // --- 数据层 ---
-    let logs = JSON.parse(localStorage.getItem('surgLogs')) || [];
-    let currentDate = new Date(); // 日历当前显示的月份
-    let selectedDateStr = toDateStr(new Date()); // 当前选中的日期字符串 yyyy-mm-dd
+    // --- 核心数据 ---
+    let logs = JSON.parse(localStorage.getItem('surgReflectLogs')) || [];
+    let currentFilter = 'all';
 
     // --- 初始化 ---
     window.onload = function() {
-        document.getElementById('input-date').value = selectedDateStr;
-        renderCalendar();
-        renderStats();
-        renderLogsForDate(selectedDateStr);
+        document.getElementById('in-date').valueAsDate = new Date();
+        renderRandomLog();
+        renderFilters();
+        renderList();
     };
 
-    // --- 日历核心逻辑 ---
-    function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth(); // 0-11
-        
-        document.getElementById('current-month-label').innerText = `${year}年 ${month + 1}月`;
-        
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const startDayIndex = firstDay.getDay(); // 0(Sun) - 6(Sat)
-        const totalDays = lastDay.getDate();
-
-        const grid = document.getElementById('days-grid');
-        grid.innerHTML = '';
-
-        // 填充空白
-        for(let i=0; i<startDayIndex; i++) {
-            let emptyDiv = document.createElement('div');
-            grid.appendChild(emptyDiv);
-        }
-
-        // 填充日期
-        for(let i=1; i<=totalDays; i++) {
-            let dayDiv = document.createElement('div');
-            let dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-            
-            dayDiv.className = 'day';
-            dayDiv.innerText = i;
-            
-            // 标记今天
-            if(dateStr === toDateStr(new Date())) dayDiv.classList.add('today');
-            // 标记选中
-            if(dateStr === selectedDateStr) dayDiv.classList.add('selected');
-            // 标记有记录
-            if(logs.some(log => log.date === dateStr)) dayDiv.classList.add('has-log');
-
-            dayDiv.onclick = () => {
-                selectedDateStr = dateStr;
-                document.getElementById('input-date').value = dateStr;
-                renderCalendar(); // 重绘以更新选中状态
-                renderLogsForDate(dateStr);
-            };
-
-            grid.appendChild(dayDiv);
-        }
-        
-        updateStatsView();
-    }
-
-    function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
-        renderCalendar();
-    }
-
-    // --- 记录操作逻辑 ---
+    // --- 1. 保存逻辑 ---
     function saveLog() {
-        const date = document.getElementById('input-date').value;
-        const expert = document.getElementById('input-expert').value.trim();
-        const procedure = document.getElementById('input-procedure').value.trim();
-        const note = document.getElementById('input-note').value.trim();
+        const name = document.getElementById('in-name').value.trim();
+        const date = document.getElementById('in-date').value;
+        const role = document.getElementById('in-role').value;
+        const anatomy = document.getElementById('in-anatomy').value;
+        const good = document.getElementById('in-good').value;
+        const bad = document.getElementById('in-bad').value;
 
-        if(!date || !expert || !procedure) {
-            alert("请至少填写日期、专家和术式");
-            return;
-        }
+        if(!name) { alert("请填写手术名称"); return; }
 
         const newLog = {
             id: Date.now(),
-            date, expert, procedure, note
+            name, date, role, anatomy, good, bad
         };
 
-        logs.push(newLog);
-        logs.sort((a,b) => new Date(b.date) - new Date(a.date)); // 按日期倒序
-        localStorage.setItem('surgLogs', JSON.stringify(logs));
-
+        logs.unshift(newLog); // 加到最前
+        localStorage.setItem('surgReflectLogs', JSON.stringify(logs));
+        
         closeModal();
-        renderCalendar();
-        renderLogsForDate(date);
+        renderFilters(); // 更新标签
+        renderList();    // 更新列表
+        renderRandomLog(); // 如果是第一条，刷新顶部
         
         // 清空表单
-        document.getElementById('input-expert').value = '';
-        document.getElementById('input-procedure').value = '';
-        document.getElementById('input-note').value = '';
-        renderStats(); // 更新统计
+        document.getElementById('in-anatomy').value = '';
+        document.getElementById('in-good').value = '';
+        document.getElementById('in-bad').value = '';
+        document.getElementById('in-name').value = '';
     }
 
-    function deleteLog(id) {
-        if(confirm("确定删除这条记录吗？")) {
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('surgLogs', JSON.stringify(logs));
-            renderCalendar();
-            renderLogsForDate(selectedDateStr);
-            renderStats();
-        }
-    }
-
-    function renderLogsForDate(dateStr) {
-        document.getElementById('selected-date-title').innerText = `${dateStr} 学习记录`;
-        const container = document.getElementById('log-list-container');
-        container.innerHTML = '';
-
-        const daysLogs = logs.filter(l => l.date === dateStr);
-
-        if(daysLogs.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#999; padding:20px; font-size:13px;">点击 + 号添加今日学习</div>';
+    // --- 2. 随机复盘逻辑 (Serendipity) ---
+    function renderRandomLog() {
+        const container = document.getElementById('random-card-area');
+        
+        if (logs.length === 0) {
+            container.innerHTML = `
+                <div class="review-card empty-state">
+                    <h3>暂无复盘记录</h3>
+                    <p>点击右下角 + 号，记录您的第一台手术心得。<br>未来的你会感谢现在的自己。</p>
+                </div>`;
             return;
         }
 
-        daysLogs.forEach(log => {
-            const card = document.createElement('div');
-            card.className = 'log-card';
-            card.innerHTML = `
-                <div class="log-info">
-                    <h4>${log.procedure}</h4>
-                    <p>
-                        <span class="log-tag">👨‍⚕️ ${log.expert}</span>
-                        ${log.note ? '<span>📝 ' + log.note + '</span>' : ''}
-                    </p>
+        // 随机抽取一个
+        const randomIndex = Math.floor(Math.random() * logs.length);
+        const log = logs[randomIndex];
+
+        container.innerHTML = `
+            <div class="review-card">
+                <div class="rc-header">
+                    <div>
+                        <div class="rc-title">${log.name}</div>
+                        <span class="rc-role">${log.role}</span>
+                    </div>
+                    <div class="rc-date">${log.date}</div>
                 </div>
-                <div style="color:#dc3545; font-size:18px; cursor:pointer;" onclick="deleteLog(${log.id})">×</div>
+                
+                ${log.anatomy ? `
+                <div class="rc-section">
+                    <span class="rc-label">🧠 解剖/变异</span>
+                    <div class="rc-content">${log.anatomy}</div>
+                </div>` : ''}
+
+                ${log.good ? `
+                <div class="rc-section">
+                    <span class="rc-label" style="color:var(--success)">✅ 亮点</span>
+                    <div class="rc-content">${log.good}</div>
+                </div>` : ''}
+
+                ${log.bad ? `
+                <div class="rc-section">
+                    <span class="rc-label" style="color:var(--danger)">⚠️ 反思</span>
+                    <div class="rc-content">${log.bad}</div>
+                </div>` : ''}
+                
+                <div style="text-align:right; margin-top:10px; opacity:0.5; font-size:12px;">🎲 随机回顾</div>
+            </div>
+        `;
+    }
+
+    // --- 3. 归档与列表展示 ---
+    function renderFilters() {
+        const container = document.getElementById('filter-container');
+        // 获取所有唯一的手术名称
+        const uniqueNames = [...new Set(logs.map(l => l.name))];
+        
+        let html = `<div class="filter-chip ${currentFilter==='all'?'active':''}" onclick="filterLogs('all', this)">全部</div>`;
+        
+        uniqueNames.forEach(name => {
+            html += `<div class="filter-chip ${currentFilter===name?'active':''}" onclick="filterLogs('${name}', this)">${name}</div>`;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function filterLogs(filterName, elem) {
+        currentFilter = filterName;
+        // 更新 UI 高亮
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        elem.classList.add('active');
+        renderList();
+    }
+
+    function renderList() {
+        const listDiv = document.getElementById('logs-list');
+        listDiv.innerHTML = '';
+
+        const filteredLogs = currentFilter === 'all' 
+            ? logs 
+            : logs.filter(l => l.name === currentFilter);
+
+        filteredLogs.forEach(log => {
+            const el = document.createElement('div');
+            el.className = 'history-card';
+            el.innerHTML = `
+                <div class="hc-top">
+                    <span class="hc-name">${log.name}</span>
+                    <span class="hc-meta">${log.date}</span>
+                </div>
+                <div style="margin-bottom:6px;">
+                    <span class="hc-role">${log.role}</span>
+                </div>
+                <div class="hc-snippet">
+                    ${log.anatomy || log.bad || log.good || '无详细文字记录'}
+                </div>
             `;
-            container.appendChild(card);
+            // 点击列表项展示详情 (这里简化为alert，也可以复用 Modal)
+            el.onclick = () => {
+                alert(`完整记录：\n\n【解剖】${log.anatomy}\n【得】${log.good}\n【失】${log.bad}`);
+            };
+            listDiv.appendChild(el);
         });
-    }
-
-    // --- 统计逻辑 ---
-    function renderStats() {
-        // 1. 总数
-        document.getElementById('total-count').innerText = logs.length;
-
-        // 2. 专家排名
-        const expertCounts = {};
-        const procCounts = {};
-        logs.forEach(l => {
-            expertCounts[l.expert] = (expertCounts[l.expert] || 0) + 1;
-            procCounts[l.procedure] = (procCounts[l.procedure] || 0) + 1;
-        });
-
-        const sortedExperts = Object.entries(expertCounts).sort((a,b) => b[1] - a[1]);
-        const sortedProcs = Object.entries(procCounts).sort((a,b) => b[1] - a[1]);
-
-        document.getElementById('top-expert').innerText = sortedExperts.length > 0 ? sortedExperts[0][0] : '-';
-
-        // 3. 高频术式展示
-        const procContainer = document.getElementById('top-procedures-list');
-        procContainer.innerHTML = '';
-        sortedProcs.slice(0, 5).forEach(item => { // 只显示前5
-            procContainer.innerHTML += `<div class="capsule">${item[0]} <strong>${item[1]}</strong></div>`;
-        });
-    }
-
-    function updateStatsView() {
-        // 本月统计
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1;
-        const monthPrefix = `${year}-${String(month).padStart(2,'0')}`;
-        const monthCount = logs.filter(l => l.date.startsWith(monthPrefix)).length;
-        document.getElementById('month-count').innerText = monthCount;
     }
 
     // --- 辅助 ---
-    function toDateStr(dateObj) {
-        return dateObj.toISOString().split('T')[0];
+    function openModal() { document.getElementById('entry-modal').style.display = 'block'; }
+    function closeModal() { document.getElementById('entry-modal').style.display = 'none'; }
+    // 点击模态框外部关闭
+    window.onclick = function(event) {
+        const modal = document.getElementById('entry-modal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
     }
-    function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
-
 </script>
 
 </body>
